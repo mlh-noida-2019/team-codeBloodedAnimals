@@ -12,6 +12,9 @@ import codecs
 # Configure app
 app = Flask(__name__)
 
+conn = sqlite3.connect('gameData.sqlite')
+cur = conn.cursor()
+
 
 @app.route("/")
 def index():
@@ -29,11 +32,10 @@ def submitted():
     answer = request.form.get("answer")
     api_key = os.environ['API_KEY']
     serviceurl = "https://maps.googleapis.com/maps/api/place/textsearch/json?"
-    conn = sqlite3.connect('gameData.sqlite')
-    cur = conn.cursor()
 
     cur.execute('''
     CREATE TABLE IF NOT EXISTS Leaderboard (address TEXT, geodata TEXT, uname TEXT)''')
+
     parms = dict()
     parms["query"] = answer
     parms["key"] = api_key
@@ -42,9 +44,8 @@ def submitted():
     data = uh.read().decode()
     # json.loads(data)
     cur.execute('''INSERT INTO Leaderboard (address, geodata, uname)
-            VALUES ( ?, ?, ? )''', (answer, memoryview(data.encode()), uname))
+            VALUES ( ?, ?, ? )''', (memoryview(answer.encode()), memoryview(data.encode()), uname))
     conn.commit()
-
     return render_template('answer-submitted.html')
 
 # dumping the geodata
@@ -52,9 +53,6 @@ def submitted():
 
 @app.route("/leaderboard")
 def leaderboard():
-    time.sleep(30)
-    conn = sqlite3.connect('gameData.sqlite')
-    cur = conn.cursor()
     cur.execute('SELECT * FROM Locations')
     fhand = codecs.open('js/where.js', 'w', "utf-8")
     fhand.write("myData = [\n")
@@ -86,7 +84,6 @@ def leaderboard():
             continue
 
     fhand.write("\n];\n")
-    cur.close()
     fhand.close()
     # print(count, "records written to where.js")
     # print("Open where.html to view the data in a browser")
