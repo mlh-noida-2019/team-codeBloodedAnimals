@@ -54,7 +54,7 @@ def leaderboard():
     conn = sqlite3.connect('gameData.sqlite')
     cur = conn.cursor()
     cur.execute('SELECT * FROM Leaderboard')
-    fhand = codecs.open('static/where.js', 'w', "utf-8")
+    fhand = codecs.open('static/place.js', 'w', "utf-8")
     fhand.write("myData = [\n")
     count = 0
     for row in cur:
@@ -71,23 +71,23 @@ def leaderboard():
         lng = js["results"][0]["geometry"]["location"]["lng"]
         if lat == 0 or lng == 0:
             continue
-        where = js['results'][0]['formatted_address']
-        where = where.replace("'", "")
+        place = js['results'][0]['formatted_address']
+        place = place.replace("'", "")
         try:
 
             count = count + 1
             if count > 1:
                 fhand.write(",\n")
-            output = "["+str(lat)+","+str(lng)+", '"+where+"']"
+            output = "["+str(lat)+","+str(lng)+", '"+place+"']"
             fhand.write(output)
         except:
             continue
 
     fhand.write("\n];\n")
     fhand.close()
-    return render_template('where.html')
-    # print(count, "records written to where.js")
-    # print("Open where.html to view the data in a browser")
+    return render_template('place.html')
+    # print(count, "records written to place.js")
+    # print("Open place.html to view the data in a browser")
 
 
 if __name__ == '__main__':
